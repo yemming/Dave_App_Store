@@ -36,6 +36,7 @@ export default function ServiceDetailPage({ params }: { params: { id: string } }
                     src={service.images[0] || 'https://via.placeholder.com/800x600'}
                     alt={service.title}
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px"
                     className="object-cover"
                   />
                 </div>
@@ -191,13 +192,19 @@ export default function ServiceDetailPage({ params }: { params: { id: string } }
                   </div>
                   <div className="text-gray-600">起</div>
                 </div>
-                <button className="w-full bg-primary text-white py-4 rounded-lg font-semibold hover:bg-primary-dark transition mb-4">
+                <Link
+                  href={`/services/${service.id}/order`}
+                  className="block w-full bg-primary text-white py-4 rounded-lg font-semibold hover:bg-primary-dark transition mb-4 text-center"
+                >
                   立即下單
-                </button>
-                <button className="w-full border-2 border-primary text-primary py-4 rounded-lg font-semibold hover:bg-primary/5 transition flex items-center justify-center space-x-2">
+                </Link>
+                <Link
+                  href={`/dashboard/messages?userId=${provider.id}`}
+                  className="block w-full border-2 border-primary text-primary py-4 rounded-lg font-semibold hover:bg-primary/5 transition flex items-center justify-center space-x-2"
+                >
                   <MessageSquare size={20} />
                   <span>聯絡提供者</span>
-                </button>
+                </Link>
               </div>
             </div>
           </div>

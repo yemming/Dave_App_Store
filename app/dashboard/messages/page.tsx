@@ -3,19 +3,63 @@
 import { mockMessages, mockUsers } from '@/data/mockData';
 import Image from 'next/image';
 import { Send, Search } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export default function MessagesPage() {
+  const searchParams = useSearchParams();
+  const userIdParam = searchParams.get('userId');
+  
   const [selectedConversation, setSelectedConversation] = useState<string | null>('conv1');
-  const conversations = [
+  
+  // Create conversations for all users (for demo)
+  const allConversations = mockUsers
+    .filter((u) => u.id !== mockUsers[0].id) // Exclude current user
+    .map((user, index) => ({
+      id: `conv${index + 1}`,
+      participant: user,
+      lastMessage: mockMessages[mockMessages.length - 1] || {
+        content: '開始對話',
+        createdAt: new Date().toISOString(),
+      },
+      unreadCount: index === 0 ? 1 : 0,
+    }));
+
+  const conversations = allConversations.length > 0 ? allConversations : [
     {
       id: 'conv1',
       participant: mockUsers[1],
-      lastMessage: mockMessages[mockMessages.length - 1],
+      lastMessage: mockMessages[mockMessages.length - 1] || {
+        content: '開始對話',
+        createdAt: new Date().toISOString(),
+      },
       unreadCount: 1,
     },
   ];
+
+  // Auto-select conversation if userId is provided
+  useEffect(() => {
+    if (userIdParam) {
+      const conversation = conversations.find((c) => c.participant.id === userIdParam);
+      if (conversation) {
+        setSelectedConversation(conversation.id);
+      } else {
+        // Create new conversation if doesn't exist
+        const user = mockUsers.find((u) => u.id === userIdParam);
+        if (user) {
+          setSelectedConversation(`new-${userIdParam}`);
+        }
+      }
+    }
+  }, [userIdParam, conversations]);
+
   const currentMessages = mockMessages.filter((m) => m.conversationId === selectedConversation);
+  
+  // Get current conversation participant
+  const currentConversation = conversations.find((c) => c.id === selectedConversation);
+  const currentParticipant = currentConversation?.participant || 
+    (userIdParam ? mockUsers.find((u) => u.id === userIdParam) : null) ||
+    mockUsers[1];
 
   return (
     <div className="p-8 h-[calc(100vh-80px)]">
@@ -88,8 +132,8 @@ export default function MessagesPage() {
               <div className="p-4 border-b border-gray-200 flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden">
                   <Image
-                    src={conversations[0].participant.avatar}
-                    alt={conversations[0].participant.companyName}
+                    src={currentParticipant.avatar}
+                    alt={currentParticipant.companyName}
                     width={40}
                     height={40}
                     className="object-cover"
@@ -97,7 +141,7 @@ export default function MessagesPage() {
                 </div>
                 <div>
                   <div className="font-semibold text-secondary">
-                    {conversations[0].participant.companyName}
+                    {currentParticipant.companyName}
                   </div>
                   <div className="text-sm text-gray-600">線上</div>
                 </div>
@@ -105,37 +149,46 @@ export default function MessagesPage() {
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {currentMessages.map((message) => {
-                  const isOwn = message.senderId === mockUsers[0].id;
-                  return (
-                    <div
-                      key={message.id}
-                      className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
-                    >
+                {currentMessages.length > 0 ? (
+                  currentMessages.map((message) => {
+                    const isOwn = message.senderId === mockUsers[0].id;
+                    return (
                       <div
-                        className={`max-w-md ${
-                          isOwn
-                            ? 'bg-primary text-white rounded-lg rounded-tr-none'
-                            : 'bg-gray-100 text-secondary rounded-lg rounded-tl-none'
-                        } p-3`}
+                        key={message.id}
+                        className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
                       >
-                        <div className="flex items-center space-x-2 mb-1">
-                          <div className="text-sm font-semibold">
-                            {message.senderName}
+                        <div
+                          className={`max-w-md ${
+                            isOwn
+                              ? 'bg-primary text-white rounded-lg rounded-tr-none'
+                              : 'bg-gray-100 text-secondary rounded-lg rounded-tl-none'
+                          } p-3`}
+                        >
+                          <div className="flex items-center space-x-2 mb-1">
+                            <div className="text-sm font-semibold">
+                              {message.senderName}
+                            </div>
+                          </div>
+                          <div className="text-sm">{message.content}</div>
+                          <div
+                            className={`text-xs mt-1 ${
+                              isOwn ? 'text-white/70' : 'text-gray-500'
+                            }`}
+                          >
+                            {message.createdAt}
                           </div>
                         </div>
-                        <div className="text-sm">{message.content}</div>
-                        <div
-                          className={`text-xs mt-1 ${
-                            isOwn ? 'text-white/70' : 'text-gray-500'
-                          }`}
-                        >
-                          {message.createdAt}
-                        </div>
                       </div>
+                    );
+                  })
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-500">
+                    <div className="text-center">
+                      <p className="mb-2">還沒有訊息</p>
+                      <p className="text-sm">開始與 {currentParticipant.companyName} 對話吧！</p>
                     </div>
-                  );
-                })}
+                  </div>
+                )}
               </div>
 
               {/* Input */}

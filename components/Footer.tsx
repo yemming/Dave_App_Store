@@ -81,6 +81,16 @@ export default function Footer() {
                   資訊科技
                 </Link>
               </li>
+              <li>
+                <Link href="/services?category=hr" className="text-gray-600 hover:text-primary transition text-sm">
+                  人力資源
+                </Link>
+              </li>
+              <li>
+                <Link href="/services?category=design" className="text-gray-600 hover:text-primary transition text-sm">
+                  設計創意
+                </Link>
+              </li>
             </ul>
           </div>
 

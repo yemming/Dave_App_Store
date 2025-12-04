@@ -51,12 +51,18 @@ export default function HomePage() {
                     <span>探索服務</span>
                     <ArrowRight size={20} />
                   </Link>
-                  <Link
-                    href="/about"
-                    className="bg-white text-primary border-2 border-primary px-8 py-4 rounded-lg font-semibold hover:bg-primary/5 transition"
-                  >
-                    了解更多
-                  </Link>
+              <Link
+                href="/about"
+                className="bg-white text-primary border-2 border-primary px-8 py-4 rounded-lg font-semibold hover:bg-primary/5 transition"
+              >
+                了解更多
+              </Link>
+              <Link
+                href="/register"
+                className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white/10 transition"
+              >
+                註冊會員
+              </Link>
                 </div>
               </div>
               <div className="relative">
@@ -69,6 +75,7 @@ export default function HomePage() {
                             src={service.images[0]}
                             alt={service.title}
                             fill
+                            sizes="(max-width: 768px) 50vw, 25vw"
                             className="object-cover"
                           />
                         </div>

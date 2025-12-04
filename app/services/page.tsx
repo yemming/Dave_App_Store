@@ -1,11 +1,81 @@
+'use client';
+
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ServiceCard from '@/components/ServiceCard';
 import { mockServices, serviceCategories } from '@/data/mockData';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export default function ServicesPage() {
-  const services = mockServices;
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get('category');
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState<string>(categoryParam || 'all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
+
+  // Set category from URL parameter
+  useEffect(() => {
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+      setCurrentPage(1);
+    }
+  }, [categoryParam]);
+  
+  const itemsPerPage = 9;
+
+  // Filter and sort services
+  const filteredServices = useMemo(() => {
+    let filtered = mockServices.filter((service) => {
+      const matchesCategory = selectedCategory === 'all' || service.categoryId === selectedCategory;
+      const matchesSearch = service.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           service.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           service.providerName.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch && service.status === 'active';
+    });
+
+    // Sort services
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'rating':
+          return b.rating - a.rating;
+        case 'price_low':
+          return a.price - b.price;
+        case 'price_high':
+          return b.price - a.price;
+        case 'newest':
+        default:
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+    });
+
+    return filtered;
+  }, [selectedCategory, searchQuery, sortBy]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentServices = filteredServices.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
+  };
+
+  const handleSortChange = (sort: string) => {
+    setSortBy(sort);
+    setCurrentPage(1);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -35,13 +105,19 @@ export default function ServicesPage() {
                 <input
                   type="text"
                   placeholder="搜尋服務名稱、提供者或關鍵字..."
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
               {/* Category Filter */}
               <div className="md:w-64">
-                <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                  <option value="">所有類別</option>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="all">所有類別</option>
                   {serviceCategories.map((cat) => (
                     <option key={cat.id} value={cat.id}>
                       {cat.name}
@@ -51,7 +127,11 @@ export default function ServicesPage() {
               </div>
               {/* Sort */}
               <div className="md:w-48">
-                <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                <select
+                  value={sortBy}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                >
                   <option value="newest">最新上架</option>
                   <option value="rating">最高評分</option>
                   <option value="price_low">價格：低到高</option>
@@ -63,42 +143,103 @@ export default function ServicesPage() {
 
           {/* Category Tabs */}
           <div className="flex flex-wrap gap-4 mb-8">
-            <button className="px-6 py-2 bg-primary text-white rounded-lg font-semibold">
+            <button
+              onClick={() => handleCategoryChange('all')}
+              className={`px-6 py-2 rounded-lg font-semibold transition ${
+                selectedCategory === 'all'
+                  ? 'bg-primary text-white'
+                  : 'bg-white border border-gray-300 text-secondary hover:bg-primary hover:text-white'
+              }`}
+            >
               全部
             </button>
             {serviceCategories.map((cat) => (
               <button
                 key={cat.id}
-                className="px-6 py-2 bg-white border border-gray-300 rounded-lg font-semibold hover:bg-primary hover:text-white transition"
+                onClick={() => handleCategoryChange(cat.id)}
+                className={`px-6 py-2 rounded-lg font-semibold transition ${
+                  selectedCategory === cat.id
+                    ? 'bg-primary text-white'
+                    : 'bg-white border border-gray-300 text-secondary hover:bg-primary hover:text-white'
+                }`}
               >
                 {cat.icon} {cat.name}
               </button>
             ))}
           </div>
 
-          {/* Services Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {services.map((service) => (
-              <ServiceCard key={service.id} service={service} />
-            ))}
+          {/* Results Count */}
+          <div className="mb-6 text-gray-600">
+            找到 <span className="font-semibold text-secondary">{filteredServices.length}</span> 個服務
+            {selectedCategory !== 'all' && (
+              <span> · 第 {currentPage} 頁，共 {totalPages} 頁</span>
+            )}
           </div>
 
-          {/* Pagination */}
-          <div className="flex justify-center items-center space-x-2">
-            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
-              上一頁
-            </button>
-            <button className="px-4 py-2 bg-primary text-white rounded-lg">1</button>
-            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
-              2
-            </button>
-            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
-              3
-            </button>
-            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
-              下一頁
-            </button>
-          </div>
+          {/* Services Grid */}
+          {currentServices.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                {currentServices.map((service) => (
+                  <ServiceCard key={service.id} service={service} />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center space-x-2">
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                  >
+                    <ChevronLeft size={18} />
+                    <span>上一頁</span>
+                  </button>
+                  
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                    // Show first page, last page, current page, and pages around current
+                    if (
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`px-4 py-2 rounded-lg transition ${
+                            currentPage === page
+                              ? 'bg-primary text-white'
+                              : 'border border-gray-300 hover:bg-gray-100'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    } else if (page === currentPage - 2 || page === currentPage + 2) {
+                      return <span key={page} className="px-2">...</span>;
+                    }
+                    return null;
+                  })}
+                  
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                  >
+                    <span>下一頁</span>
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="bg-white rounded-lg shadow-md p-12 text-center">
+              <p className="text-gray-600 text-lg mb-2">沒有找到符合條件的服務</p>
+              <p className="text-gray-500 text-sm">請嘗試調整搜尋條件或篩選條件</p>
+            </div>
+          )}
         </div>
       </main>
 

@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { Menu, X, Phone, User, LogOut } from 'lucide-react';
+import Image from 'next/image';
+import { mockUsers } from '@/data/mockData';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const isLoggedIn = true; // Hardcode for demo
-  // Hardcode for demo - using type assertion to allow role checking
-  const userRole = 'consumer' as 'consumer' | 'provider' | 'admin';
+  const { isLoggedIn, userRole, logout } = useAuth();
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -34,8 +35,12 @@ export default function Header() {
             <Link href="/about" className="text-secondary hover:text-primary transition">
               關於我們
             </Link>
-            {isLoggedIn && (
+            {isLoggedIn ? (
               <Link href="/dashboard" className="text-secondary hover:text-primary transition">
+                會員中心
+              </Link>
+            ) : (
+              <Link href="/register" className="text-secondary hover:text-primary transition">
                 會員中心
               </Link>
             )}
@@ -62,9 +67,17 @@ export default function Header() {
               <div className="relative">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition"
+                  className="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 transition"
                 >
-                  <User size={20} className="text-secondary" />
+                  <div className="w-8 h-8 rounded-full overflow-hidden relative border-2 border-gray-200">
+                    <Image
+                      src={mockUsers[0].avatar}
+                      alt={mockUsers[0].name}
+                      fill
+                      sizes="32px"
+                      className="object-cover"
+                    />
+                  </div>
                 </button>
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
@@ -86,7 +99,10 @@ export default function Header() {
                     )}
                     <button
                       className="w-full text-left px-4 py-2 hover:bg-gray-100 transition flex items-center space-x-2"
-                      onClick={() => setUserMenuOpen(false)}
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        logout();
+                      }}
                     >
                       <LogOut size={16} />
                       <span>登出</span>
@@ -95,12 +111,20 @@ export default function Header() {
                 )}
               </div>
             ) : (
-              <Link
-                href="/login"
-                className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition"
-              >
-                登入
-              </Link>
+              <div className="flex items-center space-x-3">
+                <Link
+                  href="/login"
+                  className="text-secondary hover:text-primary transition font-semibold"
+                >
+                  登入
+                </Link>
+                <Link
+                  href="/register"
+                  className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition"
+                >
+                  註冊
+                </Link>
+              </div>
             )}
 
             {/* Mobile Menu Button */}
@@ -141,9 +165,17 @@ export default function Header() {
             >
               關於我們
             </Link>
-            {isLoggedIn && (
+            {isLoggedIn ? (
               <Link
                 href="/dashboard"
+                className="block px-4 py-2 hover:bg-gray-100 transition"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                會員中心
+              </Link>
+            ) : (
+              <Link
+                href="/register"
                 className="block px-4 py-2 hover:bg-gray-100 transition"
                 onClick={() => setMobileMenuOpen(false)}
               >

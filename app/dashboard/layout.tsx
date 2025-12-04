@@ -13,6 +13,7 @@ import {
   Bell
 } from 'lucide-react';
 import Header from '@/components/Header';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function DashboardLayout({
   children,
@@ -32,40 +33,42 @@ export default function DashboardLayout({
   ];
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <div className="flex-1 flex">
-        {/* Sidebar */}
-        <aside className="w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-80px)]">
-          <nav className="p-4 space-y-2">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href || 
-                (item.href !== '/dashboard' && pathname.startsWith(item.href));
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
-                    isActive
-                      ? 'bg-primary text-white'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <Icon size={20} />
-                  <span className="font-medium">{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-        </aside>
+    <ProtectedRoute>
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 flex">
+          {/* Sidebar */}
+          <aside className="w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-80px)]">
+            <nav className="p-4 space-y-2">
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href || 
+                  (item.href !== '/dashboard' && pathname.startsWith(item.href));
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
+                      isActive
+                        ? 'bg-primary text-white'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    <Icon size={20} />
+                    <span className="font-medium">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </aside>
 
-        {/* Main Content */}
-        <main className="flex-1 bg-gray-50">
-          {children}
-        </main>
+          {/* Main Content */}
+          <main className="flex-1 bg-gray-50">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }
 

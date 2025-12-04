@@ -1,5 +1,6 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Link from 'next/link';
 import { Target, Users, Award, Heart } from 'lucide-react';
 
 export default function AboutPage() {
@@ -119,18 +120,18 @@ export default function AboutPage() {
               加入我們，體驗專業的企業服務媒合平台
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
+              <Link
                 href="/services"
                 className="bg-white text-primary px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition"
               >
                 探索服務
-              </a>
-              <a
-                href="/dashboard"
+              </Link>
+              <Link
+                href="/register"
                 className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white/10 transition"
               >
                 註冊會員
-              </a>
+              </Link>
             </div>
           </div>
         </section>

@@ -129,6 +129,7 @@ export default function SettingsPage() {
                   src={currentUser.avatar}
                   alt={currentUser.name}
                   fill
+                  sizes="96px"
                   className="object-cover"
                 />
               </div>
