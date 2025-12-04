@@ -8,7 +8,8 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const isLoggedIn = true; // Hardcode for demo
-  const userRole = 'consumer'; // Hardcode for demo
+  // Hardcode for demo - using type assertion to allow role checking
+  const userRole = 'consumer' as 'consumer' | 'provider' | 'admin';
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
