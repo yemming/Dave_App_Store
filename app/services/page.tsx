@@ -5,10 +5,11 @@ import Footer from '@/components/Footer';
 import ServiceCard from '@/components/ServiceCard';
 import { mockServices, serviceCategories } from '@/data/mockData';
 import { Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-export default function ServicesPage() {
+// Component that uses useSearchParams - must be wrapped in Suspense
+function ServicesContent() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get('category');
   
@@ -245,6 +246,27 @@ export default function ServicesPage() {
 
       <Footer />
     </div>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function ServicesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center py-20">
+              <p className="text-gray-600">載入中...</p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    }>
+      <ServicesContent />
+    </Suspense>
   );
 }
 

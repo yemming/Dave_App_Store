@@ -8,6 +8,9 @@ import { mockServices, mockUsers } from '@/data/mockData';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 
+// Force dynamic rendering to avoid build-time errors with useSearchParams
+export const dynamic = 'force-dynamic';
+
 export default function PaymentSuccessPage() {
   const searchParams = useSearchParams();
   const orderIdParam = searchParams.get('orderId');

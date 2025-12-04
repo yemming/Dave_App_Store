@@ -6,6 +6,9 @@ import { Send, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 
+// Force dynamic rendering to avoid build-time errors with useSearchParams
+export const dynamic = 'force-dynamic';
+
 export default function MessagesPage() {
   const searchParams = useSearchParams();
   const userIdParam = searchParams.get('userId');

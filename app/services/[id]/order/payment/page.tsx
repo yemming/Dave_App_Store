@@ -9,6 +9,9 @@ import { ArrowLeft, CreditCard, Coins, Tag, AlertCircle, CheckCircle } from 'luc
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+// Force dynamic rendering to avoid build-time errors with useSearchParams
+export const dynamic = 'force-dynamic';
+
 export default function PaymentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
